@@ -1,0 +1,41 @@
+"""
+Created on Thu Apr  6 17:06:46 2023
+
+@author: giannisps
+"""
+
+import rasterio
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load the first image
+image1_path = r'path_to_image'  # Replace with your image path
+with rasterio.open(image1_path) as src:
+    image1_red = src.read(3).astype(np.float32)  # Red band
+    image1_nir = src.read(4).astype(np.float32)  # Near-Infrared (NIR) band
+
+# Load the second image
+image2_path = r'path_to_image'  # Replace with your image path
+with rasterio.open(image2_path) as src:
+    image2_red = src.read(3).astype(np.float32)  # Red band
+    image2_nir = src.read(4).astype(np.float32)  # Near-Infrared (NIR) band
+
+# Calculate NDVI for each image
+ndvi_image1 = (image1_nir - image1_red) / (image1_nir + image1_red)
+ndvi_image2 = (image2_nir - image2_red) / (image2_nir + image2_red)
+
+# Apply threshold to create binary NDVI change maps
+ndvi_threshold = 0.1  # Adjust threshold as needed
+ndvi_change_map1 = np.where(ndvi_image1 > ndvi_threshold, 1, 0)
+ndvi_change_map2 = np.where(ndvi_image2 > ndvi_threshold, 1, 0)
+
+# Perform change detection by subtracting binary NDVI change maps
+change_detection_map = ndvi_change_map2 - ndvi_change_map1
+
+# Display the final change detection map
+plt.imshow(change_detection_map, cmap='gray')
+plt.colorbar(label='Change Detection')
+plt.title('NDVI Change Detection')
+plt.xlabel('Column #')
+plt.ylabel('Row #')
+plt.show()
